@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <iomanip>
+#include <limits>
 
 using namespace std;
 
@@ -264,8 +265,6 @@ void PrintClientRecordLine(sClient Client)
     cout << "| " << setw(12) << left << Client.AccountBalance;
 }
 
-// ================= Client Operations =================
-
 sClient ReadNewClient()
 {
     sClient Client;
@@ -518,8 +517,6 @@ void ShowFindClientScreen()
         cout << "\nClient with Account Number [" << AccountNumber << "] is not found!";
 }
 
-// ================= Transactions Operations =================
-
 bool DepositBalanceToClientByAccountNumber(string AccountNumber, double Amount, vector<sClient>& vClients)
 {
     char Answer = 'n';
@@ -562,7 +559,12 @@ void ShowDepositScreen()
 
     double Amount = 0;
     cout << "\nPlease enter deposit amount? ";
-    cin >> Amount;
+    while (!(cin >> Amount) || Amount <= 0)
+    {
+        cout << "Invalid amount! Please enter a valid positive deposit amount: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
 
     DepositBalanceToClientByAccountNumber(AccountNumber, Amount, vClients);
 }
@@ -587,13 +589,19 @@ void ShowWithDrawScreen()
 
     double Amount = 0;
     cout << "\nPlease enter withdraw amount? ";
-    cin >> Amount;
-
-    while (Amount > Client.AccountBalance)
+    while (!(cin >> Amount) || Amount <= 0 || Amount > Client.AccountBalance)
     {
-        cout << "\nAmount Exceeds the balance, you can withdraw up to : " << Client.AccountBalance << endl;
-        cout << "Please enter another amount? ";
-        cin >> Amount;
+        if (cin.fail() || Amount <= 0)
+        {
+            cout << "Invalid amount! Please enter a valid positive number: ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+        else
+        {
+            cout << "\nAmount Exceeds the balance, you can withdraw up to : " << Client.AccountBalance << endl;
+            cout << "Please enter another amount? ";
+        }
     }
 
     DepositBalanceToClientByAccountNumber(AccountNumber, Amount * -1, vClients);
@@ -699,8 +707,6 @@ void ShowTransactionsMenue()
 
     PerfromTranactionsMenueOption((enTranactionsMenuOptions)ReadTransactionsMenueOption());
 }
-
-// ================= Users Operations =================
 
 sUser ConvertUserLinetoRecord(string Line, string Seperator = "#//#")
 {
@@ -1155,8 +1161,6 @@ void ShowManageUsersMenue()
 
     PerfromManageUsersMenueOption((enManageUsersMenuOptions)ReadManageUsersMenueOption());
 }
-
-// ================= Main Menu & Login =================
 
 short ReadMainMenueOption()
 {
